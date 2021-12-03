@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14"></script>
+		<title id="title">Timesheet</title>
+		<link
+			rel="stylesheet"
+			href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+			integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+			crossorigin="anonymous"
+		/>
+		<script
+			src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+			integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+			crossorigin="anonymous"
+		></script>
+		<script
+			src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+			integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+			crossorigin="anonymous"
+		></script>
+		<script
+			src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+			integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+			crossorigin="anonymous"
+		></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+		<style>
+			input,
+			select {
+				border: none;
+			}
+			@media print {
+				.no-print,
+				.no-print * {
+					display: none !important;
+				}
+				.container {
+					contain: none !important;
+					padding: none !important;
+					margin: none !important;
+				}
+				.break-after {
+					page-break-after: always;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div id="app" class="container pb-5 pt-5">
+			<div class="text-uppercase"><h1>employee time sheet</h1></div>
+			<div>
+				<!-- name and week ending -->
+				<table class="table table-bordered">
+					<tbody>
+						<tr>
+							<td>Employee Name</td>
+							<td>
+								<input
+									type="text"
+									v-model="name"
+									@change="setTitle"
+								/>
+							</td>
+						</tr>
+						<tr>
+							<td>Week Ending</td>
+							<td>
+								<input
+									type="date"
+									v-model="weekending"
+									@change="setDates"
+								/>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div>
+				<!-- timesheet table -->
+				<table class="table">
+					<thead>
+						<tr>
+							<th scope="col">Date</th>
+							<th scope="col">Day</th>
+							<th scope="col">Start Time</th>
+							<th scope="col">Finish Time</th>
+							<th scope="col">Type</th>
+							<th scope="col" style="text-align: end">
+								Total Hours
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-for="(date) in dates">
+							<th scope="row">
+								<input
+									type="date"
+									name=""
+									id=""
+									v-model="date.date"
+								/>
+							</th>
+							<td>{{ date.date | day }}</td>
+							<td>
+								<input
+									type="time"
+									name=""
+									id=""
+									v-model="date.start"
+								/>
+							</td>
+							<td>
+								<input
+									type="time"
+									name=""
+									id=""
+									v-model="date.finish"
+								/>
+							</td>
+							<td>
+								<select
+									type="select"
+									name=""
+									id=""
+									v-model="date.type"
+								>
+									<option value="normal">Normal Hours</option>
+									<option value="annual leave">
+										Annual Leave
+									</option>
+									<option value="sick/personal leave">
+										Sick/Personal Leave
+									</option>
+									<option value="other">Other</option>
+								</select>
+							</td>
+
+							<td>
+								<input
+									type="text"
+									name=""
+									id=""
+									v-model="date.total"
+									style="text-align: end; padding-right: 0%"
+								/>
+							</td>
+						</tr>
+
+						<tr class="font-weight-bold">
+							<th scope="row"></th>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td>Total Hours</td>
+							<td style="text-align: end">{{total}}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="row pb-5">
+				<div class="col w-1/2">
+					<div>Employee Signature</div>
+					<!-- <div id="canvas">
+						<span class="no-print font-italic"
+							>Draw your Signature here</span
+						><br />
+					</div> -->
+					<img style="height: 120px" src="signature.png" alt="" />
+				</div>
+				<div class="col w-1/2">
+					<div>Date</div>
+					<div>{{today}}</div>
+				</div>
+			</div>
+			<div class="no-print font-italic">
+				<h1>The Free & Open Source Employee Timesheet</h1>
+				<h2>About this timesheet.</h2>
+				<h3>Licence</h3>
+				<p>
+					This timesheet is free to use and open source under an MIT
+					licence.
+				</p>
+				<h3>Information Privacy</h3>
+				<p>
+					This timesheet does not collect user information or
+					communicate with external services of any kind.
+				</p>
+				<p>
+					All persistent data, including your name and timesheet
+					details is stored locally in your web browser.
+				</p>
+				<h3>Customization</h3>
+				<p>This timesheet can be customized to suit your needs.</p>
+				<p>
+					To automatically include your signature, just save an image
+					of your signature as "signature.png" into the same folder.
+				</p>
+				<h3>More information</h3>
+				<p>
+					Check out the project on github at
+					<a
+						href="https://github.com/SteamDiesel/timesheet"
+						target="_blank"
+						>https://github.com/SteamDiesel/timesheet</a
+					>
+				</p>
+			</div>
+		</div>
+
+		<script>
+			var app = new Vue({
+				el: "#app",
+				data: {
+					name: "",
+					weekending: "",
+					signature_image: null,
+					normal_hours: {
+						start: "08:45",
+						finish: "17:15",
+						total: "7.5",
+						type: "normal",
+					},
+					dates: [
+						{
+							date: "",
+							day: "",
+							start: "",
+							finish: "",
+							type: "",
+							total: "",
+						},
+						{
+							date: "",
+							day: "",
+							start: "",
+							finish: "",
+							type: "",
+							total: "",
+						},
+						{
+							date: "",
+							day: "",
+							start: "",
+							finish: "",
+							type: "",
+							total: "",
+						},
+						{
+							date: "",
+							day: "",
+							start: "",
+							finish: "",
+							type: "",
+							total: "",
+						},
+						{
+							date: "",
+							day: "",
+							start: "",
+							finish: "",
+							type: "",
+							total: "",
+						},
+						{
+							date: "",
+							day: "",
+							start: "",
+							finish: "",
+							type: "",
+							total: "",
+						},
+						{
+							date: "",
+							day: "",
+							start: "",
+							finish: "",
+							type: "",
+							total: "",
+						},
+					],
+				},
+				methods: {
+					log(event) {
+						console.log(event.target.files[0].name);
+						const img = event.target.files[0];
+						var URL = window.URL || window.webkitURL;
+						this.signature_image = URL.createObjectURL(img);
+						console.log(this.signature_image);
+					},
+					readImageFile(file) {
+						// Check if the file is an image.
+						if (file.type && !file.type.startsWith("image/")) {
+							console.log(
+								"File is not an image.",
+								file.type,
+								file
+							);
+							return;
+						}
+
+						const reader = new FileReader();
+						reader.addEventListener("load", (event) => {
+							img.src = event.target.result;
+						});
+						reader.readAsDataURL(file);
+					},
+
+					storeSignature(event) {
+						console.log(event.target.files[0].name);
+						const img = event.target.files[0];
+						var URL = window.URL || window.webkitURL;
+						this.signature_image = URL.createObjectURL(img);
+						console.log(this.signature_image);
+						localStorage.setItem("signature", this.signature_image);
+					},
+					getSignature() {
+						this.signature_image =
+							localStorage.getItem("signature");
+					},
+					setDates() {
+						// start at 7 days before the week ending date
+						var day = moment(this.weekending).subtract(6, "d");
+						this.dates.forEach((el) => {
+							el.date = day.format("YYYY-MM-DD");
+							el.day = moment(day).format("dddd");
+							day.add(1, "d");
+						});
+						this.setNormalHours();
+						this.setTitle();
+					},
+					setNormalHours() {
+						this.dates.forEach((el) => {
+							if (el.day.match(/Sunday|Saturday/g)) {
+								console.log(
+									el.day +
+										" was not included in normal hours."
+								);
+							} else {
+								el.start = this.normal_hours.start;
+								el.finish = this.normal_hours.finish;
+								el.total = this.normal_hours.total;
+								el.type = this.normal_hours.type;
+							}
+						});
+					},
+					setTitle() {
+						const new_title =
+							"Timesheet  - " +
+							this.weekending +
+							" - " +
+							this.name;
+						document.getElementById("title").innerText = new_title;
+					},
+				},
+				computed: {
+					total() {
+						var hours = 0;
+						this.dates.forEach((el) => {
+							hours = hours + +el.total;
+						});
+						return hours;
+					},
+					today() {
+						return moment().format("DD/MM/YYYY");
+					},
+				},
+				filters: {
+					day: function (value) {
+						if (value) {
+							var day = moment(value).format("dddd");
+							return day;
+						} else return "";
+					},
+				},
+				mounted() {
+					this.getSignature();
+				},
+			});
+		</script>
+		<script>
+			(function () {
+				// Creates a new canvas element and appends it as a child
+				// to the parent element, and returns the reference to
+				// the newly created canvas element
+
+				function createCanvas(parent, width, height) {
+					var canvas = {};
+					canvas.node = document.createElement("canvas");
+					canvas.context = canvas.node.getContext("2d");
+					canvas.node.width = width || 100;
+					canvas.node.height = height || 100;
+					parent.appendChild(canvas.node);
+					return canvas;
+				}
+
+				function init(container, width, height, fillColor) {
+					var canvas = createCanvas(container, width, height);
+					var ctx = canvas.context;
+					// define a custom fillCircle method
+					ctx.fillCircle = function (x, y, radius, fillColor) {
+						this.fillStyle = fillColor;
+						this.beginPath();
+						this.moveTo(x, y);
+						this.arc(x, y, radius, 0, Math.PI * 2, false);
+						this.fill();
+					};
+					ctx.clearTo = function (fillColor) {
+						ctx.fillStyle = fillColor;
+						ctx.fillRect(0, 0, width, height);
+					};
+					ctx.clearTo(fillColor || "#ddd");
+
+					// bind mouse events
+					canvas.node.onmousemove = function (e) {
+						if (!canvas.isDrawing) {
+							return;
+						}
+						var x = e.pageX - this.offsetLeft;
+						var y = e.pageY - this.offsetTop;
+						var radius = 10; // or whatever
+						var fillColor = "#010a0a";
+						ctx.fillCircle(x, y, radius, fillColor);
+					};
+					canvas.node.onmousedown = function (e) {
+						console.log("is drawing");
+						canvas.isDrawing = true;
+					};
+					canvas.node.onmouseup = function (e) {
+						console.log("not drawing");
+						canvas.isDrawing = false;
+					};
+				}
+
+				var container = document.getElementById("canvas");
+				init(container, 200, 200, "#ffffff");
+			})();
+		</script>
+	</body>
+</html>
