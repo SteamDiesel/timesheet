@@ -29,7 +29,8 @@
 		></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 		<style>
-			input {
+			input,
+			select {
 				border: none;
 			}
 			@media print {
@@ -87,7 +88,10 @@
 							<th scope="col">Day</th>
 							<th scope="col">Start Time</th>
 							<th scope="col">Finish Time</th>
-							<th scope="col">Total Hours</th>
+							<th scope="col">Type</th>
+							<th scope="col" style="text-align: end">
+								Total Hours
+							</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -117,6 +121,26 @@
 									v-model="date.finish"
 								/>
 							</td>
+							<td>
+								<select
+									type="select"
+									name=""
+									id=""
+									v-model="date.type"
+								>
+									<option value="normal">Normal Hours</option>
+									<option value="annual leave">
+										Annual Leave
+									</option>
+									<option value="sick/personal leave">
+										Sick/Personal Leave
+									</option>
+									<option value="public holiday">
+										Public Holiday
+									</option>
+									<option value="other">Other</option>
+								</select>
+							</td>
 
 							<td>
 								<input
@@ -124,6 +148,7 @@
 									name=""
 									id=""
 									v-model="date.total"
+									style="text-align: end; padding-right: 0%"
 								/>
 							</td>
 						</tr>
@@ -132,8 +157,9 @@
 							<th scope="row"></th>
 							<td></td>
 							<td></td>
+							<td></td>
 							<td>Total Hours</td>
-							<td>{{total}}</td>
+							<td style="text-align: end">{{total}}</td>
 						</tr>
 					</tbody>
 				</table>
@@ -149,11 +175,42 @@
 				</div>
 			</div>
 			<div class="no-print font-italic">
-				<h3>About this timesheet.</h3>
+				<h1>The Free & Open Source Employee Timesheet</h1>
+				<h2>About this timesheet.</h2>
+				<h3>Licence</h3>
+				<p>
+					This timesheet is free to use and open source under an MIT
+					licence.
+				</p>
+				<h3>Information Privacy</h3>
+				<p>
+					This timesheet does not collect or send user information or
+					communicate with external services of any kind.
+				</p>
+				<p>
+					Any persistent data, including your name and timesheet
+					details are stored locally in your web browser.
+				</p>
+				<h3>Customization</h3>
 				<p>This timesheet can be customized to suit your needs.</p>
 				<p>
 					To automatically include your signature, just save an image
-					of your signature as "signature.png" into the same folder.
+					of your signature as "signature.png" into the same folder as
+					this timesheet.html file.
+				</p>
+				<h3>More information</h3>
+				<p>
+					Page logic is handled using VueJS 2.6 and styles use
+					Bootstrap 4.0, both via CDN.
+				</p>
+				<p>
+					Check out the source code in your editor of choice or the
+					project and on github at
+					<a
+						href="https://github.com/SteamDiesel/timesheet"
+						target="_blank"
+						>https://github.com/SteamDiesel/timesheet</a
+					>
 				</p>
 			</div>
 		</div>
@@ -164,10 +221,12 @@
 				data: {
 					name: "",
 					weekending: "",
+					signature_image: null,
 					normal_hours: {
 						start: "08:45",
 						finish: "17:15",
 						total: "7.5",
+						type: "normal",
 					},
 					dates: [
 						{
@@ -175,6 +234,7 @@
 							day: "",
 							start: "",
 							finish: "",
+							type: "",
 							total: "",
 						},
 						{
@@ -182,6 +242,7 @@
 							day: "",
 							start: "",
 							finish: "",
+							type: "",
 							total: "",
 						},
 						{
@@ -189,6 +250,7 @@
 							day: "",
 							start: "",
 							finish: "",
+							type: "",
 							total: "",
 						},
 						{
@@ -196,6 +258,7 @@
 							day: "",
 							start: "",
 							finish: "",
+							type: "",
 							total: "",
 						},
 						{
@@ -203,6 +266,7 @@
 							day: "",
 							start: "",
 							finish: "",
+							type: "",
 							total: "",
 						},
 						{
@@ -210,6 +274,7 @@
 							day: "",
 							start: "",
 							finish: "",
+							type: "",
 							total: "",
 						},
 						{
@@ -217,13 +282,48 @@
 							day: "",
 							start: "",
 							finish: "",
+							type: "",
 							total: "",
 						},
 					],
 				},
 				methods: {
-					log(val) {
-						console.log(val);
+					log(event) {
+						console.log(event.target.files[0].name);
+						const img = event.target.files[0];
+						var URL = window.URL || window.webkitURL;
+						this.signature_image = URL.createObjectURL(img);
+						console.log(this.signature_image);
+					},
+					readImageFile(file) {
+						// Check if the file is an image.
+						if (file.type && !file.type.startsWith("image/")) {
+							console.log(
+								"File is not an image.",
+								file.type,
+								file
+							);
+							return;
+						}
+
+						const reader = new FileReader();
+						reader.addEventListener("load", (event) => {
+							img.src = event.target.result;
+						});
+						reader.readAsDataURL(file);
+					},
+
+					storeSignature(event) {
+						console.log(event.target.files[0].name);
+						const img = event.target.files[0];
+						var URL = window.URL || window.webkitURL;
+						this.signature_image = URL.createObjectURL(img);
+						console.log(this.signature_image);
+						localStorage.setItem("signature", this.signature_image);
+					},
+					getSignature() {
+						this.signature_image =
+							localStorage.getItem("signature");
 					},
 					setDates() {
 						// start at 7 days before the week ending date
@@ -247,6 +347,7 @@
 								el.start = this.normal_hours.start;
 								el.finish = this.normal_hours.finish;
 								el.total = this.normal_hours.total;
+								el.type = this.normal_hours.type;
 							}
 						});
 					},
@@ -278,6 +379,9 @@
 							return day;
 						} else return "";
 					},
+				},
+				mounted() {
+					this.getSignature();
 				},
 			});
 		</script>
